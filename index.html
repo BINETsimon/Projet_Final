@@ -35,7 +35,7 @@
 
             //camera
             camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set( 0, 50, 50 );
+			camera.position.set( 0, 10, 0 );
 
             renderer = new THREE.WebGLRenderer( { antialias: true } );
             renderer.setPixelRatio( window.devicePixelRatio );
@@ -50,7 +50,7 @@
             
 
             var geometry = new THREE.CylinderGeometry(20, 20, 20, 30);
-            var material = new THREE.MeshPhongMaterial({ specular: '#000000', color: '#5A2D0E', emissive: '#000000', shininess: 100 } );
+            var material = new THREE.MeshBasicMaterial({color: 0xff0000});
             cylindre = new THREE.Mesh(geometry, material);
             scene.add(cylindre);
         }
