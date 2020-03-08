@@ -6,14 +6,18 @@
     <link rel="stylesheet" href="CSS/main.css">
     <title>MONSTER</title>
 </head>
-<body onmouseover="showCoords(event)">
+<body>
+    <script src="./node_modules/three/examples/js/controls/THREEx.KeyboardState.js"></script>
     <script type="module">
 
         import * as THREE from './node_modules/three/build/three.module.js';
+        import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
 
         var camera, scene, renderer;
         var cylindre;
-        
+        var spotLight;
+        var keyboard = new THREEx.KeyboardState();
+
         init();
         animate();
 
@@ -24,8 +28,8 @@
 
             //camera
             camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set( 0, 0, 0 );
-            camera.rotation.set(0,0,0);
+			camera.position.set( 100, 100, 100 );
+            camera.rotation.set(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer( { antialias: true } );
             renderer.setPixelRatio( window.devicePixelRatio );
@@ -33,29 +37,52 @@
             container.appendChild( renderer.domElement );
             renderer.outputEncoding = THREE.sRGBEncoding;
 
+
+            var controls = new OrbitControls( camera, renderer.domElement );
+
             scene = new THREE.Scene();
             scene.background = new THREE.Color( 0xcce0ff );
 
-            var ambientLight = new THREE.AmbientLight( 0xcccccc, 1 );
+            var ambientLight = new THREE.AmbientLight( 0x101010, 1 );
             scene.add( ambientLight );
-
-            var pointLight = new THREE.PointLight( 0xffffff, 0.2 );
-            camera.add( pointLight );
-            scene.add( camera );
             
-            var map = new THREE.TextureLoader().load( 'img/mountain.jpg' );
+            spotLight = new THREE.SpotLight( 0xffffff, 1 );
+            spotLight.position.set( 0, 0, 0 );
+            spotLight.penumbra = 0.05;
+            spotLight.decay = 2;
+            spotLight.distance = 200;
+            spotLight.castShadow = true;
+            spotLight.shadow.mapSize.width = 1024;
+            spotLight.shadow.mapSize.height = 1024;
+            spotLight.shadow.camera.near = 10;
+            spotLight.shadow.camera.far = 200;
+            scene.add( spotLight );
+
+            var map = new THREE.TextureLoader().load( 'img/space.jpg' );
             map.wrapS = map.wrapT = THREE.RepeatWrapping;
-            map.anisotropy = 16;
+            map.anisotropy = 100;
 
             var material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
-            cylindre = new THREE.Mesh( new THREE.CylinderBufferGeometry( 80, 80, 50, 40, 5 ), material );
-            //cylindre.rotation.x = Math.PI /2;
+            cylindre = new THREE.Mesh( new THREE.CylinderBufferGeometry(70,70, 55, 40, 5 ), material );
             scene.add(cylindre);
 
         }
+
         
         function animate() {
             //console.log(document.body.clientX);
+
+            if (keyboard.pressed("left")) {// up arrow
+                camera.rotation.y += 0.01;
+            }
+            else if (keyboard.pressed("right")) {// down arrow
+                camera.rotation.y -= 0.01;
+            }else if (keyboard.pressed("up")) {// down arrow
+                camera.rotation.x += 0.01;
+            }else if (keyboard.pressed("down")) {// down arrow
+                camera.rotation.x -= 0.01;
+            }
+            
             renderer.render( scene, camera );
             requestAnimationFrame(function(){ animate(); });
         }
