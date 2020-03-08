@@ -3,24 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="CSS/main.css">
     <title>MONSTER</title>
 </head>
-<style>
-    html,body{
-        margin: 0;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-    }
-</style>
-<body>
+<body onmouseover="showCoords(event)">
     <script type="module">
 
         import * as THREE from './node_modules/three/build/three.module.js';
-
-        import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
-        import { BasisTextureLoader } from './node_modules/three/examples/jsm/loaders/BasisTextureLoader.js';
-
 
         var camera, scene, renderer;
         var cylindre;
@@ -35,7 +24,8 @@
 
             //camera
             camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set( 0, 10, 0 );
+			camera.position.set( 0, 0, 0 );
+            camera.rotation.set(0,0,0);
 
             renderer = new THREE.WebGLRenderer( { antialias: true } );
             renderer.setPixelRatio( window.devicePixelRatio );
@@ -43,38 +33,29 @@
             container.appendChild( renderer.domElement );
             renderer.outputEncoding = THREE.sRGBEncoding;
 
-            var controls = new OrbitControls( camera, renderer.domElement );
-
             scene = new THREE.Scene();
             scene.background = new THREE.Color( 0xcce0ff );
+
+            var ambientLight = new THREE.AmbientLight( 0xcccccc, 1 );
+            scene.add( ambientLight );
+
+            var pointLight = new THREE.PointLight( 0xffffff, 0.2 );
+            camera.add( pointLight );
+            scene.add( camera );
             
-            var map = new THREE.TextureLoader().load( 'textures/uv_grid_opengl.jpg' );
+            var map = new THREE.TextureLoader().load( 'img/mountain.jpg' );
             map.wrapS = map.wrapT = THREE.RepeatWrapping;
             map.anisotropy = 16;
 
             var material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
-            var geometry = new THREE.CylinderGeometry(20, 20, 20, 30);
-            cylindre = new THREE.Mesh(geometry, material);
+            cylindre = new THREE.Mesh( new THREE.CylinderBufferGeometry( 80, 80, 50, 40, 5 ), material );
+            //cylindre.rotation.x = Math.PI /2;
             scene.add(cylindre);
 
-            var loader = new BasisTextureLoader();
-            loader.setTranscoderPath( 'js/libs/basis/' );
-            loader.detectSupport( renderer );
-            loader.load( 'textures/compressed/PavingStones.basis', function ( texture ) {
-
-                texture.encoding = THREE.sRGBEncoding;
-                material.map = texture;
-                material.needsUpdate = true;
-
-            }, undefined, function ( error ) {
-
-                console.error( error );
-
-            } );
-
         }
-
+        
         function animate() {
+            //console.log(document.body.clientX);
             renderer.render( scene, camera );
             requestAnimationFrame(function(){ animate(); });
         }
