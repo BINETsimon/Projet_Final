@@ -15,7 +15,8 @@
 
         var camera, scene, renderer;
         var cylindre;
-        var spotLight;
+        var spotLight, spotMoove;
+        var mouse = new THREE.Vector2(), INTERSECTED;
         var keyboard = new THREEx.KeyboardState();
 
         init();
@@ -28,7 +29,7 @@
 
             //camera
             camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 10000 );
-			camera.position.set( 100, 100, 100 );
+			camera.position.set( 10, 0, 0 );
             camera.rotation.set(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -37,20 +38,23 @@
             container.appendChild( renderer.domElement );
             renderer.outputEncoding = THREE.sRGBEncoding;
 
-
-            var controls = new OrbitControls( camera, renderer.domElement );
+            document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+//            var controls = new OrbitControls( camera, renderer.domElement );
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color( 0xcce0ff );
 
-            var ambientLight = new THREE.AmbientLight( 0x101010, 1 );
-            scene.add( ambientLight );
+            var ambient = new THREE.AmbientLight( 0xffffff, 0.01 );
+            scene.add( ambient );
             
             spotLight = new THREE.SpotLight( 0xffffff, 1 );
-            spotLight.position.set( 0, 0, 0 );
-            spotLight.penumbra = 0.05;
+            spotLight.position.set( -10, 0, 0 );
+            spotLight.rotation.y = 1;
+            spotLight.angle = 0.1;
+            spotLight.penumbra = 0.5;
             spotLight.decay = 2;
             spotLight.distance = 200;
+
             spotLight.castShadow = true;
             spotLight.shadow.mapSize.width = 1024;
             spotLight.shadow.mapSize.height = 1024;
@@ -58,9 +62,15 @@
             spotLight.shadow.camera.far = 200;
             scene.add( spotLight );
 
+            var material = new THREE.MeshPhongMaterial( { color : 0xffffff } );
+            spotMoove = new THREE.Mesh( new THREE.CylinderBufferGeometry(0.1,0.1, 1, 1, 1 ), material );
+            scene.add(spotMoove);
+            spotMoove.add (spotLight);
+            spotMoove.rotation.y = 2;
+
             var map = new THREE.TextureLoader().load( 'img/space.jpg' );
             map.wrapS = map.wrapT = THREE.RepeatWrapping;
-            map.anisotropy = 100;
+            map.anisotropy = 16;
 
             var material = new THREE.MeshPhongMaterial( { map: map, side: THREE.DoubleSide } );
             cylindre = new THREE.Mesh( new THREE.CylinderBufferGeometry(70,70, 55, 40, 5 ), material );
@@ -68,7 +78,12 @@
 
         }
 
-        
+        function onDocumentMouseMove() {
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+            console.log(mouse.x + " : " + mouse.y);
+        }
+
         function animate() {
             //console.log(document.body.clientX);
 
@@ -77,10 +92,6 @@
             }
             else if (keyboard.pressed("right")) {// down arrow
                 camera.rotation.y -= 0.01;
-            }else if (keyboard.pressed("up")) {// down arrow
-                camera.rotation.x += 0.01;
-            }else if (keyboard.pressed("down")) {// down arrow
-                camera.rotation.x -= 0.01;
             }
             
             renderer.render( scene, camera );
